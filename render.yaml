@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: telegram-photo-editor-bot
+    env: python
+    region: oregon # US West for optimal performance
+    plan: starter # Can be upgraded to standard/pro based on usage
+    buildCommand: "pip install --upgrade pip && pip install uv && uv pip install --system -r pyproject.toml"
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --keepalive 5 --max-requests 1000 main:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: REMOVEBG_API_KEY
+        sync: false  
+      - key: PHOTOROOM_API_KEY
+        sync: false
+      - key: WEBHOOK_MODE
+        value: "true"
+      - key: RENDER_EXTERNAL_URL
+        generateValue: true
+    disk:
+      name: app-data
+      mountPath: /app/data
+      sizeGB: 2 # Increased for processed images
+    healthCheckPath: /health
+    autoDeploy: true
+    # Automatic HTTPS and custom domain support
+    domains:
+      - telegram-photo-bot.onrender.com # Will be auto-generated
+    headers:
+      - name: X-Frame-Options
+        value: DENY
+      - name: X-Content-Type-Options  
+        value: nosniff
