@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Telegram Photo Editor Bot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-speedometer2"></i> Bot Dashboard</h1>
+            <div class="badge bg-success fs-6" id="status-badge">
+                <i class="bi bi-circle-fill"></i> <span id="status-text">Checking...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Bot Status Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-robot"></i> Bot Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <h3 class="text-primary" id="users-count">{{ bot_status.users }}</h3>
+                        <small class="text-muted">Users Served</small>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-info" id="messages-count">{{ bot_status.messages_processed }}</h3>
+                        <small class="text-muted">Messages Processed</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success" id="start-bot-btn" onclick="startBot()">
+                        <i class="bi bi-play-fill"></i> Start Bot
+                    </button>
+                    <button class="btn btn-danger" id="stop-bot-btn" onclick="stopBot()">
+                        <i class="bi bi-stop-fill"></i> Stop Bot
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bot Features Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-stars"></i> Bot Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-arrows-fullscreen text-primary me-3"></i>
+                        <div>
+                            <strong>Image Resizing</strong>
+                            <br><small class="text-muted">8K, 4K, 1080p, 720p, Mobile</small>
+                        </div>
+                    </div>
+                    <div class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-scissors text-warning me-3"></i>
+                        <div>
+                            <strong>Smart Cropping</strong>
+                            <br><small class="text-muted">Square, Portrait, Landscape</small>
+                        </div>
+                    </div>
+                    <div class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-magic text-success me-3"></i>
+                        <div>
+                            <strong>Background Tools</strong>
+                            <br><small class="text-muted">Remove & Generate</small>
+                        </div>
+                    </div>
+                    <div class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-arrow-up-circle text-info me-3"></i>
+                        <div>
+                            <strong>Quality Enhancement</strong>
+                            <br><small class="text-muted">AI-powered upscaling</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bot Setup Instructions -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-question-circle"></i> Setup Instructions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>1. Create a Telegram Bot</h6>
+                        <p>Message <code>@BotFather</code> on Telegram and create a new bot using <code>/newbot</code></p>
+                        
+                        <h6>2. Set Environment Variables</h6>
+                        <p>Required: <code>TELEGRAM_BOT_TOKEN</code></p>
+                        <p>Optional for AI features:</p>
+                        <ul class="small">
+                            <li><code>REMOVEBG_API_KEY</code> - For professional background removal</li>
+                            <li><code>PHOTOROOM_API_KEY</code> - For AI background generation</li>
+                        </ul>
+                        
+                        <h6>3. Bot Commands</h6>
+                        <ul>
+                            <li><code>/start</code> - Welcome message and instructions</li>
+                            <li><code>/help</code> - Show help and available features</li>
+                            <li><code>/status</code> - Check bot status</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info">
+                            <h6><i class="bi bi-info-circle"></i> API Status</h6>
+                            <p class="mb-2" id="token-status">
+                                <span class="badge bg-secondary">Checking...</span>
+                            </p>
+                            <div id="ai-api-status">
+                                <small class="text-muted">Loading AI API status...</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Testing Tool -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-image"></i> Test Image Processing
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="image-test-form" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="image-file" class="form-label">Select Image</label>
+                            <input type="file" class="form-control" id="image-file" name="image" accept="image/*" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="action-select" class="form-label">Action</label>
+                            <select class="form-select" id="action-select" name="action">
+                                <option value="resize">Resize (800x600)</option>
+                                <option value="crop">Crop (300x300)</option>
+                                <option value="remove_bg">Remove Background</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3 align-self-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-gear"></i> Process Image
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div id="processing-result" class="mt-3" style="display: none;">
+                    <div class="alert alert-info">
+                        <i class="bi bi-hourglass-split"></i> Processing image...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
